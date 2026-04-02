@@ -1,0 +1,81 @@
+package org.kirov.plugins.yinwutax.command;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.kirov.plugins.yinwutax.YinwuTaxPlugin;
+
+public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
+
+    private static final List<String> ROOT = Arrays.asList("status", "reload", "exempt", "headcount", "settle");
+
+    private final YinwuTaxPlugin plugin;
+    private final YinwuTaxAdminCommand adminCommand;
+
+    public YinwuTaxCommand(YinwuTaxPlugin plugin, YinwuTaxAdminCommand adminCommand) {
+        this.plugin = plugin;
+        this.adminCommand = adminCommand;
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length > 0) {
+            boolean handled = adminCommand.handle(sender, args);
+            if (handled) {
+                return true;
+            }
+
+            if (ROOT.contains(args[0].toLowerCase()) && !"status".equalsIgnoreCase(args[0])) {
+                return true;
+            }
+        }
+
+        if (!(sender instanceof Player player)) {
+            if (args.length > 1 && "status".equalsIgnoreCase(args[0]) && sender.hasPermission("yinwutax.command.status")) {
+                return sendStatus(sender, Bukkit.getOfflinePlayer(args[1]));
+            }
+            sender.sendMessage("/yinwutax status <player>");
+            return true;
+        }
+
+        OfflinePlayer target = args.length > 1 && "status".equalsIgnoreCase(args[0])
+            ? Bukkit.getOfflinePlayer(args[1])
+            : player;
+
+        if (!target.getUniqueId().equals(player.getUniqueId()) && !sender.hasPermission("yinwutax.command.status") && !sender.hasPermission("yinwutax.admin")) {
+            sender.sendMessage("You do not have permission: yinwutax.command.status");
+            return true;
+        }
+
+        return sendStatus(sender, target);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length == 1) {
+            return ROOT.stream().filter(option -> option.startsWith(args[0].toLowerCase())).toList();
+        }
+        return List.of();
+    }
+
+    private boolean sendStatus(CommandSender sender, OfflinePlayer target) {
+        UUID targetId = target.getUniqueId();
+        sender.sendMessage("YinwuTax status for " + target.getName());
+        sender.sendMessage("Income rate: " + plugin.getServices().getCurrentIncomeRate(targetId));
+        sender.sendMessage("Wealth rate: " + plugin.getServices().getCurrentWealthRate(targetId));
+        sender.sendMessage("Exemptions: " + plugin.getServices().getRemainingExemptions(targetId));
+        sender.sendMessage("Last tax amount: " + plugin.getServices().getLastTaxAmount(targetId));
+        sender.sendMessage("Linked accounts: " + plugin.getServices().getLinkedAccountCount(targetId));
+        return true;
+    }
+}

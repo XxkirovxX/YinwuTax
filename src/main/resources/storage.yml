@@ -1,0 +1,4 @@
+format-version: 1
+notes:
+  - tax-data.yml stores income ledgers, exemptions, headcount overrides and hashed IP history.
+  - hashed IP values should never be exposed to players.

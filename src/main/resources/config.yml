@@ -1,0 +1,48 @@
+income-tax:
+  enabled: true
+  period: 24h
+  exclude-set-reset: true
+  exclude-admin-operations: true
+  brackets:
+    bracket-1:
+      min: 0
+      max: 999.99
+      rate: 0.03
+    bracket-2:
+      min: 1000
+      max: 9999.99
+      rate: 0.08
+    bracket-3:
+      min: 10000
+      rate: 0.15
+
+headcount-tax:
+  enabled: true
+  per-account-extra-rate: 0.20
+
+wealth-tax:
+  enabled: true
+  period: 24h
+  brackets:
+    bracket-1:
+      min: 0
+      max: 4999.99
+      rate: 0.01
+    bracket-2:
+      min: 5000
+      max: 19999.99
+      rate: 0.03
+    bracket-3:
+      min: 20000
+      rate: 0.05
+
+exemption:
+  enabled: true
+  max-grant-per-command: 64
+
+storage:
+  ip-hash-salt: change-me
+  data-file: tax-data.yml
+
+velocity:
+  enabled: false

@@ -1,0 +1,12 @@
+/target/
+/.idea/
+/.vscode/
+/.settings/
+/*.iml
+
+# Cursor workspace metadata
+/.cursor/
+
+# OS files
+Thumbs.db
+Desktop.ini

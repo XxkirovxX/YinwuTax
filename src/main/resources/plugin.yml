@@ -1,0 +1,34 @@
+name: YinwuTax
+main: org.kirov.plugins.yinwutax.YinwuTaxPlugin
+version: ${project.version}
+description: Tax plugin with income, headcount and wealth taxes for Bukkit/Paper/Folia.
+api-version: "1.20"
+folia-supported: true
+authors: [kirov, Cursor]
+softdepend: [Vault, VaultUnlocked, PlaceholderAPI, iConomyUnlocked]
+
+commands:
+  yinwutax:
+    description: Main command for YinwuTax.
+    usage: /yinwutax
+    aliases: [ytax]
+
+permissions:
+  yinwutax.admin:
+    description: Full admin access to YinwuTax.
+    default: op
+  yinwutax.command.reload:
+    description: Reload YinwuTax configuration.
+    default: op
+  yinwutax.command.status:
+    description: View tax status.
+    default: op
+  yinwutax.command.exempt:
+    description: Manage exemption counts.
+    default: op
+  yinwutax.command.headcount:
+    description: Manage headcount overrides.
+    default: op
+  yinwutax.command.settle:
+    description: Trigger manual settlement.
+    default: op
