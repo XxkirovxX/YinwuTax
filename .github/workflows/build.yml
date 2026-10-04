@@ -39,10 +39,10 @@ jobs:
           java-version: ${{ matrix.java }}
           maven-version: 3.9.16
 
-      # 仓库内自带 .mvn/repository 依赖缓存，并由 .mvn/maven.config 指向它，
-      # 因此这里可以离线构建：不依赖中央仓库可用性，也不会解析到新的 SNAPSHOT。
-      - name: Build and test (offline)
-        run: mvn -B -ntp -o clean verify
+      # 依赖从 pom.xml 声明的仓库解析（PaperMC / CodeMC / ExtendedClip）；
+      # 仓库内的 .mvn/repository 是本地缓存、未纳入版本库，因此这里不做离线构建。
+      - name: Build and test
+        run: mvn -B -ntp clean verify
 
       - name: Upload plugin jar
         uses: actions/upload-artifact@v4

@@ -63,12 +63,21 @@ mvn -B clean package
 ./mvnw -B test
 ```
 
-### 本地仓库与离线构建
+### 依赖下载与离线构建
 
-仓库内自带一份依赖缓存 `.mvn/repository/`，`.mvn/maven.config` 已把本地仓库指向该目录，因此在依赖已缓存的前提下可以离线构建：
+首次构建需要联网：Maven 会从 `pom.xml` 中声明的仓库（PaperMC、CodeMC、ExtendedClip 等）下载依赖。
+
+本机若存在 `.mvn/repository/` 目录（开发机上用于集中缓存的依赖副本，**未纳入版本库**，因为体积约 95 MB），可以让 Maven 直接复用它：
 
 ```bash
-./mvnw -B -o clean package
+./mvnw -B -Dmaven.repo.local=.mvn/repository clean package
+```
+
+例如国内网络访问 PaperMC 仓库不稳定时，可以先在能联网的环境执行一次 `dependency:go-offline` 填充该目录，之后离线构建：
+
+```bash
+./mvnw -B -Dmaven.repo.local=.mvn/repository dependency:go-offline
+./mvnw -B -o -Dmaven.repo.local=.mvn/repository clean package
 ```
 
 需要注意 `paper-api` 使用的是 `1.21.11-R0.1-SNAPSHOT`，上游清理该快照后在线构建会解析到新版本；需要完全可复现时请把 `pom.xml` 中的 `paper.version` 固定到具体构建号。
