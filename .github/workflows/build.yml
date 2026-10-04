@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 同一分支上的旧构建自动取消，避免排队浪费
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: JDK ${{ matrix.java }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux 为主，Windows 覆盖 .cmd 与路径分支
+        os: [ubuntu-latest, windows-latest]
+        java: ['21']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      # 仓库内自带 .mvn/repository 依赖缓存，并由 .mvn/maven.config 指向它，
+      # 因此这里可以离线构建：不依赖中央仓库可用性，也不会解析到新的 SNAPSHOT。
+      - name: Build and test (offline)
+        run: ./mvnw -B -ntp -o clean verify
+        shell: bash
+        if: runner.os != 'Windows'
+
+      - name: Build and test (offline, Windows)
+        run: .\mvnw.cmd -B -ntp -o clean verify
+        shell: pwsh
+        if: runner.os == 'Windows'
+
+      - name: Upload plugin jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: yinwutax-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: target/yinwutax-*.jar
+          if-no-files-found: error
+
+      - name: Upload test reports on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: surefire-reports-${{ matrix.os }}-jdk${{ matrix.java }}
+          path: target/surefire-reports/
+          if-no-files-found: ignore

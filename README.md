@@ -1,5 +1,9 @@
 # YinwuTax
 
+[![Build](https://github.com/XxkirovxX/YinwuTax/actions/workflows/build.yml/badge.svg)](https://github.com/XxkirovxX/YinwuTax/actions/workflows/build.yml)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+[![Java 21+](https://img.shields.io/badge/Java-21%2B-orange.svg)](pom.xml)
+
 YinwuTax 是一款面向 `Bukkit`、`Paper`、`Folia` 服务端的 Minecraft 税务插件，基于 `VaultUnlocked` 与 `iConomyUnlocked` 构建，提供可配置、可扩展的服务器税收系统。
 
 ## 插件简介
