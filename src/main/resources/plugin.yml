@@ -5,7 +5,7 @@ description: 适用于 Bukkit/Paper/Folia 的税务插件，支持所得税、�
 api-version: "1.21"
 folia-supported: true
 authors: [kirov]
-website: https://github.com/YinwuRealm/YinwuTax
+website: https://github.com/XxkirovxX/YinwuTax
 softdepend: [Vault, VaultUnlocked, PlaceholderAPI, iConomyUnlocked]
 
 commands:

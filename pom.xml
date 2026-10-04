@@ -10,7 +10,7 @@
 
     <name>YinwuTax</name>
     <description>Tax plugin for Bukkit/Paper/Folia using VaultUnlocked and iConomyUnlocked.</description>
-    <url>https://github.com/YinwuRealm/YinwuTax</url>
+    <url>https://github.com/XxkirovxX/YinwuTax</url>
 
     <licenses>
         <license>
@@ -29,9 +29,10 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/YinwuRealm/YinwuTax.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/YinwuRealm/YinwuTax.git</developerConnection>
-        <url>https://github.com/YinwuRealm/YinwuTax</url>
+        <connection>scm:git:https://github.com/XxkirovxX/YinwuTax.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/XxkirovxX/YinwuTax.git</developerConnection>
+        <url>https://github.com/XxkirovxX/YinwuTax</url>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
