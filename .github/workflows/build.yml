@@ -30,23 +30,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # CI 里用 setup-java 提供的 Maven（版本与 .mvn/wrapper 中固定的 3.9.16 一致），
+      # 避免每次构建都下载 Maven 发行包；mvnw 仍然保留给本地开发者使用。
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
+          maven-version: 3.9.16
 
       # 仓库内自带 .mvn/repository 依赖缓存，并由 .mvn/maven.config 指向它，
       # 因此这里可以离线构建：不依赖中央仓库可用性，也不会解析到新的 SNAPSHOT。
       - name: Build and test (offline)
-        run: ./mvnw -B -ntp -o clean verify
-        shell: bash
-        if: runner.os != 'Windows'
-
-      - name: Build and test (offline, Windows)
-        run: .\mvnw.cmd -B -ntp -o clean verify
-        shell: pwsh
-        if: runner.os == 'Windows'
+        run: mvn -B -ntp -o clean verify
 
       - name: Upload plugin jar
         uses: actions/upload-artifact@v4
