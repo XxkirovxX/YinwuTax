@@ -5,16 +5,39 @@
 
     <groupId>org.kirov.plugins</groupId>
     <artifactId>yinwutax</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>YinwuTax</name>
     <description>Tax plugin for Bukkit/Paper/Folia using VaultUnlocked and iConomyUnlocked.</description>
+    <url>https://github.com/YinwuRealm/YinwuTax</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>Xx_Kirov_xX</id>
+            <name>Xx_Kirov_xX</name>
+            <url>https://namemc.com/profile/Xx_Kirov_xX.1</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/YinwuRealm/YinwuTax.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/YinwuRealm/YinwuTax.git</developerConnection>
+        <url>https://github.com/YinwuRealm/YinwuTax</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
-        <spigot.version>1.20.6-R0.1-SNAPSHOT</spigot.version>
+        <maven.compiler.release>21</maven.compiler.release>
+        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
         <vaultunlocked.version>2.16</vaultunlocked.version>
         <placeholderapi.version>2.11.6</placeholderapi.version>
         <junit.version>5.10.2</junit.version>
@@ -22,8 +45,8 @@
 
     <repositories>
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>codemc-repo</id>
@@ -41,9 +64,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${spigot.version}</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

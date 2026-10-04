@@ -21,6 +21,7 @@ public record YinwuTaxConfig(
     public static YinwuTaxConfig from(FileConfiguration configuration) {
         Objects.requireNonNull(configuration, "configuration");
 
+        // 把松散的 YAML 结构收敛成强类型配置，后续业务层只面向这些配置对象工作。
         return new YinwuTaxConfig(
             new IncomeTaxSettings(
                 configuration.getBoolean("income-tax.enabled", true),
@@ -56,6 +57,7 @@ public record YinwuTaxConfig(
             return brackets;
         }
 
+        // 税档按配置节点顺序读取；v1 直接依赖配置书写顺序来表达梯度区间。
         for (String key : section.getKeys(false)) {
             ConfigurationSection bracketSection = section.getConfigurationSection(key);
             if (bracketSection == null) {

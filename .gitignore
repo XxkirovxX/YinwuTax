@@ -1,12 +1,32 @@
+# 构建产物
 /target/
+
+# 本地依赖缓存由 .mvn/maven.config 指向，属于可再生成的缓存，不入版本库
+/.mvn/repository/
+
+# Maven Wrapper 下载的发行包
+/.mvn/wrapper/maven-wrapper.jar
+
+# IDE / 编辑器
 /.idea/
 /.vscode/
 /.settings/
+/.cursor/
+.classpath
+.project
+.factorypath
 /*.iml
 
-# Cursor workspace metadata
-/.cursor/
+# 会话级工具目录（例如权限诊断报告）
+/.dsh-acl-recovery/
+
+# 日志与临时文件
+*.log
+*.dump
+*.dumpstream
+hs_err_pid*.log
 
 # OS files
 Thumbs.db
 Desktop.ini
+.DS_Store

@@ -1,48 +1,81 @@
+# YinwuTax 主配置文件
+# 时长格式示例: 30m、12h、7d
+# 税率请使用小数表示，例如 0.03 代表 3%
+
+# 所得税设置：基于玩家收入累计应用税率
 income-tax:
+  # 是否启用所得税定时结算
   enabled: true
+  # 所得税结算周期
   period: 24h
+  # 是否排除 iConomy /money set、/money reset 等重置类操作
   exclude-set-reset: true
+  # 是否排除带管理性质的经济变更
   exclude-admin-operations: true
+  # 税档按书写顺序依次生效，建议从低到高填写
   brackets:
+    # 0 - 999.99 收入区间，税率 3%
     bracket-1:
       min: 0
       max: 999.99
       rate: 0.03
+    # 1000 - 9999.99 收入区间，税率 8%
     bracket-2:
       min: 1000
       max: 9999.99
       rate: 0.08
+    # 10000 及以上收入区间，税率 15%
     bracket-3:
       min: 10000
       rate: 0.15
 
+# 人头税设置：关联账户越多，所得税附加比例越高
 headcount-tax:
+  # 是否启用按关联账户数追加税率
   enabled: true
+  # 每多 1 个关联账户，额外增加多少所得税率
+  # 示例: 0.20 表示每多一个账户，额外加 20%
   per-account-extra-rate: 0.20
 
+# 财产税设置：按账户当前余额应用税率
 wealth-tax:
+  # 是否启用财产税定时结算
   enabled: true
+  # 财产税结算周期
   period: 24h
+  # 税档按书写顺序依次生效，建议从低到高填写
   brackets:
+    # 0 - 4999.99 资产区间，税率 1%
     bracket-1:
       min: 0
       max: 4999.99
       rate: 0.01
+    # 5000 - 19999.99 资产区间，税率 3%
     bracket-2:
       min: 5000
       max: 19999.99
       rate: 0.03
+    # 20000 及以上资产区间，税率 5%
     bracket-3:
       min: 20000
       rate: 0.05
 
+# 免税次数设置：可用于活动、补偿或管理豁免
 exemption:
+  # 是否启用免税次数功能
   enabled: true
+  # 单次指令最多可发放多少次免税
   max-grant-per-command: 64
 
+# 存储设置
 storage:
+  # IP 哈希盐，务必改成你自己的随机字符串，避免被反推出真实 IP
+  # 示例: your-server-secret-2026
   ip-hash-salt: change-me
+  # 运行时税务数据文件名，通常无需修改
   data-file: tax-data.yml
 
+# Velocity 联动设置
 velocity:
+  # 仅在你已接入 Velocity 桥接场景时启用
   enabled: false

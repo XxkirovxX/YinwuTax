@@ -1,0 +1,24 @@
+# 文本文件按文本处理；不强制统一换行符，避免整仓重写
+* text=auto
+
+# 源码与文档
+*.java text diff=java
+*.xml text
+*.yml text
+*.yaml text
+*.md text
+*.txt text
+*.properties text
+
+# 脚本换行符：Linux 服务端上执行的文件必须是 LF，Windows 批处理必须是 CRLF
+mvnw text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件
+*.jar binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.zip binary

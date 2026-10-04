@@ -1,110 +1,52 @@
 package org.kirov.plugins.yinwutax.platform.scheduler;
 
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import org.bukkit.plugin.Plugin;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
+/**
+ * {@link TaskDispatcher} 的平台实现：在构造阶段解析一次服务端能力，之后只做委托。
+ *
+ * <p>解析结果只可能是 Bukkit 后端或 Folia 后端；Folia 存在但不可用时会在解析阶段显式
+ * 记录日志，不会静默把 Folia 任务塞给 Bukkit 调度器。
+ */
+public final class PlatformTaskDispatcher implements TaskDispatcher {
 
-public class PlatformTaskDispatcher implements TaskDispatcher {
+    private final SchedulerBackend backend;
 
-    private final JavaPlugin plugin;
-    private final Map<String, Object> scheduledTasks = new ConcurrentHashMap<>();
+    public PlatformTaskDispatcher(Plugin plugin) {
+        this.backend = new SchedulerBackendResolver(plugin).backend();
+    }
 
-    public PlatformTaskDispatcher(JavaPlugin plugin) {
-        this.plugin = plugin;
+    PlatformTaskDispatcher(SchedulerBackend backend) {
+        this.backend = backend;
     }
 
     @Override
     public void runGlobal(Runnable task) {
-        if (tryRunFoliaGlobal(task)) {
-            return;
-        }
-
-        Bukkit.getScheduler().runTask(plugin, task);
+        backend.runGlobal(task);
     }
 
     @Override
     public void runAsync(Runnable task) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
+        backend.runAsync(task);
+    }
+
+    @Override
+    public void scheduleGlobalDelayed(TaskContext context, Runnable task) {
+        backend.scheduleGlobalDelayed(context, task);
     }
 
     @Override
     public void scheduleGlobalRepeating(TaskContext context, Runnable task) {
-        cancel(context.key());
-        if (tryScheduleFoliaGlobal(context, task)) {
-            return;
-        }
-
-        BukkitTask scheduled = Bukkit.getScheduler().runTaskTimer(
-            plugin,
-            task,
-            TaskDispatcher.toTicks(context.initialDelay()),
-            TaskDispatcher.toTicks(context.period())
-        );
-        scheduledTasks.put(context.key(), scheduled);
+        backend.scheduleGlobalRepeating(context, task);
     }
 
     @Override
     public void cancel(String key) {
-        Object task = scheduledTasks.remove(key);
-        if (task instanceof BukkitTask bukkitTask) {
-            bukkitTask.cancel();
-            return;
-        }
-
-        if (task != null) {
-            try {
-                task.getClass().getMethod("cancel").invoke(task);
-            } catch (ReflectiveOperationException ignored) {
-            }
-        }
+        backend.cancel(key);
     }
 
     @Override
     public void close() {
-        for (String key : scheduledTasks.keySet()) {
-            cancel(key);
-        }
-    }
-
-    private boolean tryRunFoliaGlobal(Runnable task) {
-        try {
-            Object scheduler = Bukkit.getServer().getClass().getMethod("getGlobalRegionScheduler").invoke(Bukkit.getServer());
-            Method runMethod = scheduler.getClass().getMethod("run", JavaPlugin.class, Consumer.class);
-            runMethod.invoke(scheduler, plugin, (Consumer<Object>) ignored -> task.run());
-            return true;
-        } catch (ReflectiveOperationException ignored) {
-            return false;
-        }
-    }
-
-    private boolean tryScheduleFoliaGlobal(TaskContext context, Runnable task) {
-        try {
-            Object scheduler = Bukkit.getServer().getClass().getMethod("getGlobalRegionScheduler").invoke(Bukkit.getServer());
-            Method runAtFixedRate = scheduler.getClass().getMethod(
-                "runAtFixedRate",
-                JavaPlugin.class,
-                Consumer.class,
-                long.class,
-                long.class
-            );
-
-            Object scheduled = runAtFixedRate.invoke(
-                scheduler,
-                plugin,
-                (Consumer<Object>) ignored -> task.run(),
-                TaskDispatcher.toTicks(context.initialDelay()),
-                TaskDispatcher.toTicks(context.period())
-            );
-            scheduledTasks.put(context.key(), scheduled);
-            return true;
-        } catch (ReflectiveOperationException ignored) {
-            return false;
-        }
+        backend.close();
     }
 }

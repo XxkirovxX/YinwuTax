@@ -43,6 +43,7 @@ public class TaxCoordinator {
         int settled = 0;
         for (UUID playerId : incomeTaxService.getTrackedPlayers()) {
             BigDecimal baseRate = incomeTaxService.getCurrentBaseRate(playerId);
+            // 规则顺序固定：先算所得税梯度，再乘人头税附加倍率。
             BigDecimal finalRate = headcountEnabled
                 ? headcountTaxService.resolveFinalIncomeTaxRate(playerId, baseRate, ipHistoryTracker.getLinkedAccountCount(playerId))
                 : baseRate;
@@ -60,6 +61,7 @@ public class TaxCoordinator {
     }
 
     public int settleWealthTaxes() {
+        // 财富税直接从经济插件读取当前余额，因此先拿到当前已知账户集合。
         Set<UUID> accounts = new HashSet<>(economyGateway.getKnownAccounts());
         incomeTaxService.registerKnownAccounts(accounts);
 

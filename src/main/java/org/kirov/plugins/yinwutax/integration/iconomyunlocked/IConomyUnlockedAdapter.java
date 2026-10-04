@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.kirov.plugins.yinwutax.integration.income.IncomeObservationStrategy;
 import org.kirov.plugins.yinwutax.tax.income.IncomeTaxService;
 
+// 通过反射接 iConomyUnlocked，保证目标插件缺失时主插件仍能启动。
 public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listener {
 
     private static final String ICONOMY_PLUGIN_NAME = "iConomyUnlocked";
@@ -68,6 +69,7 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
 
         try {
             Class<? extends Event> eventClass = (Class<? extends Event>) Class.forName(ACCOUNT_UPDATE_EVENT);
+            // 这里不直接硬依赖事件类，而是在运行时反射注册，避免缺依赖时类加载失败。
             EventExecutor executor = (listener, event) -> {
                 try {
                     handleAccountUpdate(event);
@@ -112,6 +114,8 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
         }
 
         String subcommand = args[1].toLowerCase(Locale.ROOT);
+        // 这里只跳过该账号接下来一次“正向入账”事件，用来过滤管理员修正，
+        // 不影响之后真正的玩家收入继续计税。
         if ("grant".equals(subcommand) && excludeAdminOperations) {
             String accountName = args[2].toLowerCase(Locale.ROOT);
             pendingAdminGrantExclusions.merge(accountName, 1, Integer::sum);
@@ -135,6 +139,7 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
         BigDecimal balance = BigDecimal.valueOf(((Number) getBalance.invoke(event)).doubleValue());
         BigDecimal delta = balance.subtract(previous);
 
+        // 只有余额正增长才视为收入；支出或无变化都不进入所得税账本。
         if (delta.signum() <= 0) {
             return;
         }
@@ -152,6 +157,7 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
             return false;
         }
 
+        // 排除标记只消费一次，防止后续真实收入也被一起吞掉。
         if (count == 1) {
             pendingAdminGrantExclusions.remove(accountName);
         } else {

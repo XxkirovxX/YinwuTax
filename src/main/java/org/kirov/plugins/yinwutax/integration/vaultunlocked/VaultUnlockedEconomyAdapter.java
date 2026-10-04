@@ -47,6 +47,7 @@ public class VaultUnlockedEconomyAdapter implements EconomyGateway {
             return Collections.emptyList();
         }
 
+        // 这里直接复用经济插件维护的 UUID->名称映射，避免自己再维护一份账号目录。
         Map<?, ?> map = provider.getUUIDNameMap();
         return map == null ? Collections.emptyList() : map.keySet().stream()
             .filter(UUID.class::isInstance)
@@ -62,6 +63,7 @@ public class VaultUnlockedEconomyAdapter implements EconomyGateway {
         }
 
         BigDecimal balance = provider.getBalance(PLUGIN_NAME, accountId);
+        // 扣税时只扣到玩家当前可扣余额为止，避免因为余额不足直接整笔失败。
         BigDecimal amountToWithdraw = requestedAmount.min(balance).max(BigDecimal.ZERO);
         if (amountToWithdraw.signum() <= 0) {
             return new EconomyTransactionResult(false, requestedAmount, BigDecimal.ZERO, balance, "No balance available for tax collection.");

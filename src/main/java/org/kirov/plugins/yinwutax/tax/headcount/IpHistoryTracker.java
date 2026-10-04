@@ -6,6 +6,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,12 +47,19 @@ public class IpHistoryTracker implements Listener {
     }
 
     public int getLinkedAccountCount(UUID playerId) {
-        Set<UUID> linked = ConcurrentHashMap.newKeySet();
+        return getLinkedAccounts(playerId).size();
+    }
+
+    public Set<UUID> getLinkedAccounts(UUID playerId) {
+        Set<UUID> linked = new TreeSet<>();
         for (String hash : snapshot.getPlayerIpHashes().getOrDefault(playerId, Set.of())) {
             linked.addAll(snapshot.getIpOwners().getOrDefault(hash, Set.of()));
         }
 
-        return Math.max(1, linked.size());
+        if (linked.isEmpty()) {
+            linked.add(playerId);
+        }
+        return linked;
     }
 
     private String hashIp(String rawIp) {

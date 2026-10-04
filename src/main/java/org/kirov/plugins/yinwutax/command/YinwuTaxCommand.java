@@ -2,6 +2,7 @@ package org.kirov.plugins.yinwutax.command;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -30,6 +31,7 @@ public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length > 0) {
+            // 管理子命令先尝试在这里分流，避免后面掉回默认的 status 展示逻辑。
             boolean handled = adminCommand.handle(sender, args);
             if (handled) {
                 return true;
@@ -44,7 +46,7 @@ public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
             if (args.length > 1 && "status".equalsIgnoreCase(args[0]) && sender.hasPermission("yinwutax.command.status")) {
                 return sendStatus(sender, Bukkit.getOfflinePlayer(args[1]));
             }
-            sender.sendMessage("/yinwutax status <player>");
+            sender.sendMessage(CommandText.usage("/yinwutax status <玩家>"));
             return true;
         }
 
@@ -53,7 +55,7 @@ public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
             : player;
 
         if (!target.getUniqueId().equals(player.getUniqueId()) && !sender.hasPermission("yinwutax.command.status") && !sender.hasPermission("yinwutax.admin")) {
-            sender.sendMessage("You do not have permission: yinwutax.command.status");
+            sender.sendMessage(CommandText.permission("yinwutax.command.status"));
             return true;
         }
 
@@ -70,12 +72,28 @@ public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
 
     private boolean sendStatus(CommandSender sender, OfflinePlayer target) {
         UUID targetId = target.getUniqueId();
-        sender.sendMessage("YinwuTax status for " + target.getName());
-        sender.sendMessage("Income rate: " + plugin.getServices().getCurrentIncomeRate(targetId));
-        sender.sendMessage("Wealth rate: " + plugin.getServices().getCurrentWealthRate(targetId));
-        sender.sendMessage("Exemptions: " + plugin.getServices().getRemainingExemptions(targetId));
-        sender.sendMessage("Last tax amount: " + plugin.getServices().getLastTaxAmount(targetId));
-        sender.sendMessage("Linked accounts: " + plugin.getServices().getLinkedAccountCount(targetId));
+        Set<UUID> linkedAccounts = plugin.getServices().getLinkedAccounts(targetId);
+        String targetName = resolvePlayerName(target);
+        String linkedAccountDisplay = LinkedAccountDisplayFormatter.format(
+            linkedAccounts,
+            linkedPlayerId -> resolvePlayerName(Bukkit.getOfflinePlayer(linkedPlayerId))
+        );
+
+        // 这里聚合展示当前税务状态，避免命令主流程里堆太多重复发送逻辑。
+        sender.sendMessage(CommandText.statusHeader(targetName));
+        sender.sendMessage(CommandText.statusLine("所得税率: ", plugin.getServices().getCurrentIncomeRate(targetId)));
+        sender.sendMessage(CommandText.statusLine("财产税率: ", plugin.getServices().getCurrentWealthRate(targetId)));
+        sender.sendMessage(CommandText.statusLine("剩余免税次数: ", plugin.getServices().getRemainingExemptions(targetId)));
+        sender.sendMessage(CommandText.statusLine("上次税额: ", plugin.getServices().getLastTaxAmount(targetId)));
+        sender.sendMessage(CommandText.statusLine("关联账户数: ", linkedAccounts.size()));
+        sender.sendMessage(CommandText.statusLine("关联账户列表: ", linkedAccountDisplay));
         return true;
+    }
+
+    private String resolvePlayerName(OfflinePlayer player) {
+        if (player.getName() == null || player.getName().isBlank()) {
+            return player.getUniqueId().toString();
+        }
+        return player.getName();
     }
 }

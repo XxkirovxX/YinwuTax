@@ -1,6 +1,7 @@
 package org.kirov.plugins.yinwutax.bootstrap;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -29,6 +30,7 @@ import org.kirov.plugins.yinwutax.tax.wealth.WealthBracketResolver;
 import org.kirov.plugins.yinwutax.tax.wealth.WealthTaxService;
 import org.kirov.plugins.yinwutax.velocity.VelocityBridge;
 
+// 统一负责服务装配，避免主类膨胀，也方便重载时整体重建依赖。
 public class ServiceRegistry implements AutoCloseable {
 
     private final JavaPlugin plugin;
@@ -91,6 +93,7 @@ public class ServiceRegistry implements AutoCloseable {
         TaskDispatcher dispatcher = new PlatformTaskDispatcher(plugin);
         EconomyGateway economyGateway = new VaultUnlockedEconomyAdapter(plugin);
 
+        // 各个税务模块共用同一份快照，命令、定时任务和持久化都围绕这份内存视图工作。
         IncomeTaxService incomeTaxService = new IncomeTaxService(
             new IncomeBracketResolver(config.incomeTax().brackets()),
             storage,
@@ -153,6 +156,7 @@ public class ServiceRegistry implements AutoCloseable {
         iconomyUnlockedAdapter.start();
         velocityBridge.start();
 
+        // 所得税和财富税各自独立调度，方便分别开关和单独调整周期。
         if (config.incomeTax().enabled()) {
             taskDispatcher.scheduleGlobalRepeating(
                 new TaskContext("income-tax", config.incomeTax().period(), config.incomeTax().period()),
@@ -230,6 +234,10 @@ public class ServiceRegistry implements AutoCloseable {
         return ipHistoryTracker.getLinkedAccountCount(playerId);
     }
 
+    public Set<UUID> getLinkedAccounts(UUID playerId) {
+        return ipHistoryTracker.getLinkedAccounts(playerId);
+    }
+
     public EconomyGateway getEconomyGateway() {
         return economyGateway;
     }
@@ -239,6 +247,7 @@ public class ServiceRegistry implements AutoCloseable {
     }
 
     public void persist() {
+        // 命令侧使用各自的 store 做增删改，这里在落盘前统一回写到共享快照。
         snapshot.getExemptions().clear();
         snapshot.getExemptions().putAll(exemptionStore.export());
         snapshot.getHeadcountOverrides().clear();

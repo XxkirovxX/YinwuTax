@@ -26,6 +26,7 @@ public class YamlStorageFacade implements StorageFacade {
 
     @Override
     public synchronized TaxDataSnapshot load() {
+        // v1 先用 YAML 落盘，因此启动时需要把各类税务状态重新装回内存快照。
         TaxDataSnapshot snapshot = new TaxDataSnapshot();
         if (!dataFile.exists()) {
             return snapshot;
@@ -44,6 +45,7 @@ public class YamlStorageFacade implements StorageFacade {
 
     @Override
     public synchronized void save(TaxDataSnapshot snapshot) {
+        // 每次保存都从快照重新生成 YAML，避免残留旧字段。
         YamlConfiguration yaml = new YamlConfiguration();
         saveUuidSet(yaml.createSection("known-accounts"), snapshot.getKnownAccounts());
         saveBigDecimalMap(yaml.createSection("income-totals"), snapshot.getIncomeTotals());
@@ -149,6 +151,7 @@ public class YamlStorageFacade implements StorageFacade {
     }
 
     private BigDecimal parseBigDecimal(Object rawValue, BigDecimal fallback) {
+        // Bukkit 配置 API 对数值类型比较宽松，这里统一兜底成 BigDecimal。
         if (rawValue == null) {
             return fallback;
         }

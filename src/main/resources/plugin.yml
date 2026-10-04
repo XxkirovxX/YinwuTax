@@ -1,34 +1,35 @@
 name: YinwuTax
 main: org.kirov.plugins.yinwutax.YinwuTaxPlugin
 version: ${project.version}
-description: Tax plugin with income, headcount and wealth taxes for Bukkit/Paper/Folia.
-api-version: "1.20"
+description: 适用于 Bukkit/Paper/Folia 的税务插件，支持所得税、人头税与财产税。
+api-version: "1.21"
 folia-supported: true
-authors: [kirov, Cursor]
+authors: [kirov]
+website: https://github.com/YinwuRealm/YinwuTax
 softdepend: [Vault, VaultUnlocked, PlaceholderAPI, iConomyUnlocked]
 
 commands:
   yinwutax:
-    description: Main command for YinwuTax.
-    usage: /yinwutax
+    description: 查看税务状态并执行管理命令。
+    usage: /yinwutax [status|reload|exempt|headcount|settle]
     aliases: [ytax]
 
 permissions:
   yinwutax.admin:
-    description: Full admin access to YinwuTax.
+    description: 拥有 YinwuTax 全部管理权限。
     default: op
   yinwutax.command.reload:
-    description: Reload YinwuTax configuration.
+    description: 重载 YinwuTax 配置。
     default: op
   yinwutax.command.status:
-    description: View tax status.
+    description: 查看玩家税务状态。
     default: op
   yinwutax.command.exempt:
-    description: Manage exemption counts.
+    description: 管理玩家免税次数。
     default: op
   yinwutax.command.headcount:
-    description: Manage headcount overrides.
+    description: 管理人头税额外账户覆盖值。
     default: op
   yinwutax.command.settle:
-    description: Trigger manual settlement.
+    description: 手动触发税务结算。
     default: op

@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.kirov.plugins.yinwutax.YinwuTaxPlugin;
+import org.kirov.plugins.yinwutax.command.CommandText;
 
 public class ExemptGrantSubcommand {
 
@@ -17,11 +18,12 @@ public class ExemptGrantSubcommand {
 
     public boolean handle(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            return false;
+            sender.sendMessage(CommandText.usage("/yinwutax exempt <grant|take> <玩家> <数量>"));
+            return true;
         }
 
         if (!plugin.getServices().getConfigModel().exemption().enabled()) {
-            sender.sendMessage("Exemption feature is disabled in config.");
+            sender.sendMessage(CommandText.warning("免税功能已在配置中关闭。"));
             return true;
         }
 
@@ -29,18 +31,18 @@ public class ExemptGrantSubcommand {
         try {
             count = Integer.parseInt(args[2]);
         } catch (NumberFormatException exception) {
-            sender.sendMessage("Invalid exemption count: " + args[2]);
+            sender.sendMessage(CommandText.error("免税次数格式无效: " + args[2]));
             return true;
         }
 
         if (count <= 0) {
-            sender.sendMessage("Exemption count must be positive.");
+            sender.sendMessage(CommandText.error("免税次数必须大于 0。"));
             return true;
         }
 
         int maxGrant = plugin.getServices().getConfigModel().exemption().maxGrantPerCommand();
         if ("grant".equalsIgnoreCase(args[0]) && count > maxGrant) {
-            sender.sendMessage("Grant count exceeds configured max: " + maxGrant);
+            sender.sendMessage(CommandText.error("发放数量超过配置上限: " + maxGrant));
             return true;
         }
 
@@ -49,16 +51,24 @@ public class ExemptGrantSubcommand {
 
         if ("grant".equalsIgnoreCase(args[0])) {
             plugin.getServices().grantExemptions(targetId, count);
-            sender.sendMessage("Granted " + count + " exemption(s) to " + target.getName() + ".");
+            sender.sendMessage(CommandText.success("已向 " + resolvePlayerName(target) + " 发放 " + count + " 次免税。"));
             return true;
         }
 
         if ("take".equalsIgnoreCase(args[0])) {
             plugin.getServices().takeExemptions(targetId, count);
-            sender.sendMessage("Removed " + count + " exemption(s) from " + target.getName() + ".");
+            sender.sendMessage(CommandText.success("已从 " + resolvePlayerName(target) + " 扣除 " + count + " 次免税。"));
             return true;
         }
 
-        return false;
+        sender.sendMessage(CommandText.usage("/yinwutax exempt <grant|take> <玩家> <数量>"));
+        return true;
+    }
+
+    private String resolvePlayerName(OfflinePlayer player) {
+        if (player.getName() == null || player.getName().isBlank()) {
+            return player.getUniqueId().toString();
+        }
+        return player.getName();
     }
 }

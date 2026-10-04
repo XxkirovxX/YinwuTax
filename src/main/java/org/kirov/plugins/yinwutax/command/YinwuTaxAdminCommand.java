@@ -22,6 +22,7 @@ public class YinwuTaxAdminCommand {
             return false;
         }
 
+        // 这里只负责一层根命令分发，具体参数校验交给下一级子命令处理。
         return switch (args[0].toLowerCase()) {
             case "reload" -> hasPermission(sender, "yinwutax.command.reload") && handleReload(sender);
             case "exempt" -> hasPermission(sender, "yinwutax.command.exempt") && exemptGrantSubcommand.handle(sender, slice(args));
@@ -33,28 +34,30 @@ public class YinwuTaxAdminCommand {
 
     private boolean handleReload(CommandSender sender) {
         plugin.reloadServices();
-        sender.sendMessage("YinwuTax configuration reloaded.");
+        sender.sendMessage(CommandText.success("配置已重载。"));
         return true;
     }
 
     private boolean handleSettle(CommandSender sender, String[] args) {
         if (args.length == 0) {
-            return false;
+            sender.sendMessage(CommandText.usage("/yinwutax settle <income|wealth>"));
+            return true;
         }
 
         if ("income".equalsIgnoreCase(args[0])) {
             int settled = plugin.getServices().runIncomeSettlement();
-            sender.sendMessage("Income settlement complete: " + settled + " statement(s).");
+            sender.sendMessage(CommandText.success("所得税结算完成，共处理 " + settled + " 条记录。"));
             return true;
         }
 
         if ("wealth".equalsIgnoreCase(args[0])) {
             int settled = plugin.getServices().runWealthSettlement();
-            sender.sendMessage("Wealth settlement complete: " + settled + " statement(s).");
+            sender.sendMessage(CommandText.success("财产税结算完成，共处理 " + settled + " 条记录。"));
             return true;
         }
 
-        return false;
+        sender.sendMessage(CommandText.usage("/yinwutax settle <income|wealth>"));
+        return true;
     }
 
     private String[] slice(String[] args) {
@@ -68,7 +71,7 @@ public class YinwuTaxAdminCommand {
             return true;
         }
 
-        sender.sendMessage("You do not have permission: " + permission);
+        sender.sendMessage(CommandText.permission(permission));
         return false;
     }
 }

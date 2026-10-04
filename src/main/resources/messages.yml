@@ -1,13 +1,43 @@
+# YinwuTax 默认消息模板示例
+# 说明:
+# - 当前版本不会读取此文件内容，实际前台消息以代码内文案为准
+# - 本文件仅作为默认文案、占位符与配色参考，便于后续接入消息配置化时对照
+# - 可使用 {player}、{value}、{count}、{permission}、{usage} 等占位符
+# - 颜色代码沿用 Bukkit 传统 & 色码，例如 &6 金色、&7 灰色、&b 青色、&a 绿色、&c 红色
+
+# 通用前缀
 prefix: "&6[YinwuTax]&r "
-reload-success: "&aConfiguration reloaded."
-status-header: "&eTax status for {player}"
-status-income-rate: "&7Income rate: &f{value}"
-status-wealth-rate: "&7Wealth rate: &f{value}"
-status-exemptions: "&7Exemptions: &f{value}"
-status-last-tax: "&7Last tax amount: &f{value}"
-exemption-granted: "&aGranted {count} exemption(s) to {player}."
-exemption-consumed: "&aThis statement was exempted and consumed one exemption."
-headcount-override-set: "&aHeadcount override for {player} set to {value} extra account(s)."
-headcount-override-cleared: "&aHeadcount override for {player} cleared."
-settlement-income-finished: "&aIncome tax settlement finished."
-settlement-wealth-finished: "&aWealth tax settlement finished."
+
+# 通用提示
+no-permission: "&c你没有权限: &f{permission}"
+usage: "&e用法: &f{usage}"
+reload-success: "&a配置已重载。"
+
+# 状态页
+status-header: "&6&l税务状态 &7- &f{player}"
+status-income-rate: "&7所得税率: &b{value}"
+status-wealth-rate: "&7财产税率: &b{value}"
+status-exemptions: "&7剩余免税次数: &b{value}"
+status-last-tax: "&7上次税额: &b{value}"
+status-linked-count: "&7关联账户数: &b{value}"
+status-linked-list: "&7关联账户列表: &b{value}"
+
+# 免税相关
+exemption-feature-disabled: "&e免税功能已在配置中关闭。"
+exemption-invalid-count: "&c免税次数格式无效: &f{value}"
+exemption-count-positive: "&c免税次数必须大于 0。"
+exemption-grant-exceeds-max: "&c发放数量超过配置上限: &f{value}"
+exemption-granted: "&a已向 {player} 发放 {count} 次免税。"
+exemption-taken: "&a已从 {player} 扣除 {count} 次免税。"
+exemption-consumed: "&a本次结算已使用 1 次免税。"
+
+# 人头税覆盖
+headcount-feature-disabled: "&e人头税功能已在配置中关闭。"
+headcount-invalid-count: "&c额外账户数格式无效: &f{value}"
+headcount-count-negative: "&c额外账户数不能为负数。"
+headcount-override-set: "&a已将 {player} 的额外账户数设置为 {value}。"
+headcount-override-cleared: "&a已清除 {player} 的人头税覆盖设置。"
+
+# 手动结算
+settlement-income-finished: "&a所得税结算完成，共处理 {count} 条记录。"
+settlement-wealth-finished: "&a财产税结算完成，共处理 {count} 条记录。"

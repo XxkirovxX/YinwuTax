@@ -1,4 +1,7 @@
+# 存储说明文件
+# 本文件用于解释运行时数据 YAML 的用途，不建议删除。
 format-version: 1
 notes:
-  - tax-data.yml stores income ledgers, exemptions, headcount overrides and hashed IP history.
-  - hashed IP values should never be exposed to players.
+  - tax-data.yml 用于保存收入记录、免税次数、人头税覆盖值以及经过哈希处理的 IP 关联历史。
+  - 哈希后的 IP 仅用于关联账户统计，不应向玩家公开。
+  - 如果修改 storage.data-file，请自行迁移旧数据文件，插件不会自动重命名或搬迁。
