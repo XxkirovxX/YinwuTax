@@ -24,13 +24,19 @@ public class IncomeTaxService {
         this.snapshot = Objects.requireNonNull(snapshot, "snapshot");
     }
 
-    public void recordIncome(UUID playerId, BigDecimal amount) {
+    /**
+     * 记录一笔收入。
+     *
+     * @return 是否真的入账；金额非正数时不入账并返回 {@code false}
+     */
+    public boolean recordIncome(UUID playerId, BigDecimal amount) {
         if (playerId == null || amount == null || amount.signum() <= 0) {
-            return;
+            return false;
         }
 
         snapshot.getKnownAccounts().add(playerId);
         snapshot.getIncomeTotals().merge(playerId, amount, BigDecimal::add);
+        return true;
     }
 
     public BigDecimal getAccruedIncome(UUID playerId) {

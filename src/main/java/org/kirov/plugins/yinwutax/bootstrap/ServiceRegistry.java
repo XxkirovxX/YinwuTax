@@ -11,6 +11,7 @@ import org.kirov.plugins.yinwutax.config.YinwuTaxConfig;
 import org.kirov.plugins.yinwutax.integration.EconomyGateway;
 import org.kirov.plugins.yinwutax.integration.EconomyGatewayFactory;
 import org.kirov.plugins.yinwutax.integration.iconomyunlocked.IConomyUnlockedAdapter;
+import org.kirov.plugins.yinwutax.notify.TaxNotifier;
 import org.kirov.plugins.yinwutax.platform.scheduler.PlatformTaskDispatcher;
 import org.kirov.plugins.yinwutax.platform.scheduler.TaskContext;
 import org.kirov.plugins.yinwutax.platform.scheduler.TaskDispatcher;
@@ -49,6 +50,7 @@ public class ServiceRegistry implements AutoCloseable {
     private final TaxCoordinator taxCoordinator;
     private final IConomyUnlockedAdapter iconomyUnlockedAdapter;
     private final VelocityBridge velocityBridge;
+    private final TaxNotifier taxNotifier;
 
     private ServiceRegistry(
         JavaPlugin plugin,
@@ -66,7 +68,8 @@ public class ServiceRegistry implements AutoCloseable {
         WealthTaxService wealthTaxService,
         TaxCoordinator taxCoordinator,
         IConomyUnlockedAdapter iconomyUnlockedAdapter,
-        VelocityBridge velocityBridge
+        VelocityBridge velocityBridge,
+        TaxNotifier taxNotifier
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -84,6 +87,7 @@ public class ServiceRegistry implements AutoCloseable {
         this.taxCoordinator = taxCoordinator;
         this.iconomyUnlockedAdapter = iconomyUnlockedAdapter;
         this.velocityBridge = velocityBridge;
+        this.taxNotifier = taxNotifier;
     }
 
     public static ServiceRegistry bootstrap(JavaPlugin plugin) {
@@ -113,7 +117,23 @@ public class ServiceRegistry implements AutoCloseable {
             storage,
             snapshot
         );
-        TaxCollectionExecutor collectionExecutor = new TaxCollectionExecutor(economyGateway, exemptionService, config.exemption().enabled());
+        // 提醒发送方：逐笔收入提醒依赖收入档位、人头税倍率、关联账户与免税状态；
+        // 结算提醒由收取器在真实扣款结果出来后调用。
+        TaxNotifier taxNotifier = new TaxNotifier(
+            plugin,
+            new IncomeBracketResolver(config.incomeTax().brackets()),
+            headcountTaxService,
+            ipHistoryTracker,
+            exemptionService,
+            config.headcountTax().enabled(),
+            config.exemption().enabled()
+        );
+        TaxCollectionExecutor collectionExecutor = new TaxCollectionExecutor(
+            economyGateway,
+            exemptionService,
+            config.exemption().enabled(),
+            taxNotifier
+        );
         TaxCoordinator taxCoordinator = new TaxCoordinator(
             economyGateway,
             incomeTaxService,
@@ -126,6 +146,7 @@ public class ServiceRegistry implements AutoCloseable {
         IConomyUnlockedAdapter iconomyUnlockedAdapter = new IConomyUnlockedAdapter(
             plugin,
             incomeTaxService,
+            taxNotifier,
             config.incomeTax().excludeAdminOperations(),
             config.incomeTax().excludeSetReset()
         );
@@ -147,12 +168,15 @@ public class ServiceRegistry implements AutoCloseable {
             wealthTaxService,
             taxCoordinator,
             iconomyUnlockedAdapter,
-            velocityBridge
+            velocityBridge,
+            taxNotifier
         );
     }
 
     public void start() {
         Bukkit.getPluginManager().registerEvents(ipHistoryTracker, plugin);
+        // 提醒器需要监听玩家上线，以便补发离线期间被扣税的汇总。
+        Bukkit.getPluginManager().registerEvents(taxNotifier, plugin);
         iconomyUnlockedAdapter.start();
         velocityBridge.start();
 

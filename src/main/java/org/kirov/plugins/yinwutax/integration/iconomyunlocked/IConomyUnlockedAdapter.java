@@ -20,6 +20,7 @@ import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.kirov.plugins.yinwutax.integration.income.IncomeObservationStrategy;
+import org.kirov.plugins.yinwutax.notify.TaxNotifier;
 import org.kirov.plugins.yinwutax.tax.income.IncomeTaxService;
 
 // 通过反射接 iConomyUnlocked，保证目标插件缺失时主插件仍能启动。
@@ -30,6 +31,7 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
 
     private final JavaPlugin plugin;
     private final IncomeTaxService incomeTaxService;
+    private final TaxNotifier notifier;
     private final Map<String, Integer> pendingAdminGrantExclusions = new ConcurrentHashMap<>();
     private final boolean excludeAdminOperations;
     private final boolean excludeSetReset;
@@ -39,11 +41,13 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
     public IConomyUnlockedAdapter(
         JavaPlugin plugin,
         IncomeTaxService incomeTaxService,
+        TaxNotifier notifier,
         boolean excludeAdminOperations,
         boolean excludeSetReset
     ) {
         this.plugin = plugin;
         this.incomeTaxService = incomeTaxService;
+        this.notifier = notifier;
         this.excludeAdminOperations = excludeAdminOperations;
         this.excludeSetReset = excludeSetReset;
     }
@@ -148,7 +152,10 @@ public class IConomyUnlockedAdapter implements IncomeObservationStrategy, Listen
             return;
         }
 
-        incomeTaxService.recordIncome(accountId, delta);
+        // 入账成功才提醒，保证"有收入"与"有提醒"一一对应。
+        if (incomeTaxService.recordIncome(accountId, delta)) {
+            notifier.notifyIncome(accountId, delta);
+        }
     }
 
     private boolean consumeAdminGrantExclusion(String accountName) {

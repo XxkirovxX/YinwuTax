@@ -53,9 +53,11 @@ public class TaxCoordinator {
                 continue;
             }
 
-            BigDecimal collected = collectionExecutor.execute(statement);
-            incomeTaxService.finishCycle(playerId, collected);
-            settled++;
+            TaxCollectionResult result = collectionExecutor.execute(statement);
+            incomeTaxService.finishCycle(playerId, result.collectedAmount());
+            if (result.exemptionApplied() || result.succeeded()) {
+                settled++;
+            }
         }
         return settled;
     }
@@ -72,9 +74,11 @@ public class TaxCoordinator {
                 continue;
             }
 
-            BigDecimal collected = collectionExecutor.execute(statement);
-            wealthTaxService.recordCollection(playerId, collected);
-            settled++;
+            TaxCollectionResult result = collectionExecutor.execute(statement);
+            wealthTaxService.recordCollection(playerId, result.collectedAmount());
+            if (result.exemptionApplied() || result.succeeded()) {
+                settled++;
+            }
         }
         return settled;
     }
