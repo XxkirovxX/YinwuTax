@@ -2,6 +2,24 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/) 命名版本号。
 
+## [1.0.3]
+
+### 修复
+
+- 修复服务端未安装 `VaultUnlocked` 时执行 `/yinwutax status` 抛出
+  `NoClassDefFoundError: net/milkbowl/vault2/economy/Economy`（表现为 "Command exception"）的问题。
+  该错误属于 `Error`，业务代码的 `catch (Exception)` 无法捕获，因此此前会直接冒到命令层。
+
+### 变更
+
+- 经济网关改为完全反射实现（`ReflectiveEconomyGateway` + `EconomyGatewayFactory`），
+  类文件中不再出现任何 Vault 类型引用；按 `VaultUnlocked` → 经典 `Vault` → 无经济插件 的顺序探测，
+  选定结果会打印一行日志说明实际使用的 provider。
+- 未安装经济插件时改为**安全降级**：插件正常启用，余额读作 0，税额为 0，
+  并在控制台明确提示需要安装哪个依赖，而不是让命令报错或定时结算崩溃。
+- 命令层的经济数值读取增加兜底，个别数值读取失败只显示 0 并记录警告，不再中断整条命令。
+- 移除旧的 `VaultUnlockedEconomyAdapter`（硬引用 Vault 类型的实现）。
+
 ## [1.0.2]
 
 ### 新增

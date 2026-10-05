@@ -9,8 +9,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.kirov.plugins.yinwutax.config.YinwuTaxConfig;
 import org.kirov.plugins.yinwutax.integration.EconomyGateway;
+import org.kirov.plugins.yinwutax.integration.EconomyGatewayFactory;
 import org.kirov.plugins.yinwutax.integration.iconomyunlocked.IConomyUnlockedAdapter;
-import org.kirov.plugins.yinwutax.integration.vaultunlocked.VaultUnlockedEconomyAdapter;
 import org.kirov.plugins.yinwutax.platform.scheduler.PlatformTaskDispatcher;
 import org.kirov.plugins.yinwutax.platform.scheduler.TaskContext;
 import org.kirov.plugins.yinwutax.platform.scheduler.TaskDispatcher;
@@ -91,7 +91,7 @@ public class ServiceRegistry implements AutoCloseable {
         StorageFacade storage = new YamlStorageFacade(plugin, config.storage().dataFileName());
         TaxDataSnapshot snapshot = storage.load();
         TaskDispatcher dispatcher = new PlatformTaskDispatcher(plugin);
-        EconomyGateway economyGateway = new VaultUnlockedEconomyAdapter(plugin);
+        EconomyGateway economyGateway = EconomyGatewayFactory.create(plugin);
 
         // 各个税务模块共用同一份快照，命令、定时任务和持久化都围绕这份内存视图工作。
         IncomeTaxService incomeTaxService = new IncomeTaxService(

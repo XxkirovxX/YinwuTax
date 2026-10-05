@@ -1,9 +1,12 @@
 package org.kirov.plugins.yinwutax.command;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -81,13 +84,33 @@ public class YinwuTaxCommand implements CommandExecutor, TabCompleter {
 
         // 这里聚合展示当前税务状态，避免命令主流程里堆太多重复发送逻辑。
         sender.sendMessage(CommandText.statusHeader(targetName));
-        sender.sendMessage(CommandText.statusLine("所得税率: ", plugin.getServices().getCurrentIncomeRate(targetId)));
-        sender.sendMessage(CommandText.statusLine("财产税率: ", plugin.getServices().getCurrentWealthRate(targetId)));
+        sender.sendMessage(CommandText.statusLine("所得税率: ", safeEconomyLookup(targetId, plugin.getServices()::getCurrentIncomeRate)));
+        sender.sendMessage(CommandText.statusLine("财产税率: ", safeEconomyLookup(targetId, plugin.getServices()::getCurrentWealthRate)));
         sender.sendMessage(CommandText.statusLine("剩余免税次数: ", plugin.getServices().getRemainingExemptions(targetId)));
         sender.sendMessage(CommandText.statusLine("上次税额: ", plugin.getServices().getLastTaxAmount(targetId)));
         sender.sendMessage(CommandText.statusLine("关联账户数: ", linkedAccounts.size()));
         sender.sendMessage(CommandText.statusLine("关联账户列表: ", linkedAccountDisplay));
         return true;
+    }
+
+    /**
+     * 读取依赖经济插件的数值。
+     *
+     * <p>这里捕获 {@link Throwable} 而不是 {@link Exception}：缺少经济插件时抛的是
+     * {@link NoClassDefFoundError}（属于 {@link Error}），若放任它冒出去，
+     * 命令会被服务端记成 "Command exception" 并把堆栈甩给玩家。
+     */
+    private String safeEconomyLookup(UUID playerId, Function<UUID, BigDecimal> lookup) {
+        try {
+            return lookup.apply(playerId).toPlainString();
+        } catch (Throwable failure) {
+            plugin.getLogger().log(
+                Level.WARNING,
+                "Failed to read economy-dependent value for " + playerId + "; showing 0 instead.",
+                failure
+            );
+            return "0";
+        }
     }
 
     private String resolvePlayerName(OfflinePlayer player) {
